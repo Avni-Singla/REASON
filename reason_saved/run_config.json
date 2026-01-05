@@ -1,0 +1,9 @@
+{
+  "CLEAN_BEFORE_START": false,
+  "QUICK_MODE": true,
+  "DATA_DIR": "/content/data",
+  "SAVE_DIR": "/content/reason_saved",
+  "USE_PENULTIMATE_FEATS": true,
+  "META_PCA_DIM": 256,
+  "KNN_K": 5
+}

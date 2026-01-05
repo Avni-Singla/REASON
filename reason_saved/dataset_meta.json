@@ -1,0 +1,19 @@
+{
+  "NUM_CLASSES": 10,
+  "class_names": [
+    "Tench (fish, Tinca tinca)",
+    "English springer (dog)",
+    "Cassette player (audio equipment)",
+    "Chain saw (chainsaw, power tool)",
+    "Church (building)",
+    "French horn (musical instrument)",
+    "Garbage truck (refuse collection vehicle)",
+    "Gas mask (protective mask)",
+    "Golf ball (sports equipment)",
+    "Parachute (aerial deceleration device)"
+  ],
+  "train_samples": 2000,
+  "val_samples": 3925,
+  "batch_size": 16,
+  "img_size": 224
+}

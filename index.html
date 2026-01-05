@@ -1,0 +1,265 @@
+<!-- index.html -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>REASON — ImageNet Demo</title>
+  <style>
+    :root{
+      --bg: #0f1724;
+      --card: #0b1220;
+      --accent: #6ee7b7;
+      --muted: #94a3b8;
+      --glass: rgba(255,255,255,0.03);
+      --glass-2: rgba(255,255,255,0.02);
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    html,body{height:100%; margin:0; background:linear-gradient(180deg,#071028 0%, #0f1724 100%); color:#e6eef8;}
+    .container{max-width:1100px;margin:28px auto;padding:20px;}
+    .header{display:flex;align-items:center;gap:16px}
+    .logo{width:62px;height:62px;border-radius:12px;background:linear-gradient(135deg,#0ea5a4,#64748b);display:flex;align-items:center;justify-content:center;font-weight:700}
+    h1{margin:0;font-size:20px}
+    p.lead{color:var(--muted);margin:6px 0 18px 0}
+
+    .grid{display:grid;grid-template-columns:360px 1fr;gap:18px}
+    .card{background:var(--card);border-radius:12px;padding:14px;box-shadow:0 6px 18px rgba(2,6,23,0.6)}
+    .uploader{display:flex;flex-direction:column;gap:8px}
+    .preview{width:320px;height:320px;border-radius:8px;background:var(--glass);display:flex;align-items:center;justify-content:center;overflow:hidden}
+    .preview img{max-width:100%;max-height:100%;object-fit:contain}
+    input[type=file]{display:none}
+    .btn{background:linear-gradient(90deg,#0ea5a4,#60a5fa);padding:10px 14px;border-radius:8px;color:#052127;border:none;cursor:pointer;font-weight:600}
+    .muted{color:var(--muted);font-size:13px}
+    .row{display:flex;gap:10px;align-items:center}
+    .stat{background:var(--glass-2);padding:8px;border-radius:8px;min-width:120px;text-align:center}
+    .stat h3{margin:0;font-size:16px}
+    .stat p{margin:4px 0 0 0;color:var(--muted);font-size:12px}
+    .results{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:12px}
+    .plot{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:8px;border-radius:8px;min-height:120px}
+    .pre{white-space:pre-wrap;max-height:260px;overflow:auto;background:#051426;padding:10px;border-radius:8px;font-family:monospace;font-size:13px;color:#cfe9ff}
+
+    footer{color:var(--muted);font-size:13px;margin-top:18px;text-align:center}
+    .small{font-size:13px;color:var(--muted)}
+    .config{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+
+    .download-btn{background:#0f1724;border:1px solid rgba(255,255,255,0.06);padding:6px 10px;border-radius:8px;color:var(--muted);cursor:pointer}
+    @media (max-width:980px){ .grid{grid-template-columns:1fr; } .preview{width:100%;height:240px} }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">RSN</div>
+      <div>
+        <h1>REASON — Image-based REliability & SOurce iNspectioN</h1>
+        <p class="lead">Upload an image (ImageNet / Imagenette style). Backend returns base model prediction and REASON meta probability with diagnostic plots.</p>
+      </div>
+    </div>
+
+    <div style="margin-top:14px" class="card">
+      <div class="config">
+        <label class="small muted">Backend URL:</label>
+        <input id="backendUrl" type="text" style="flex:1;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:#e6eef8" value="http://127.0.0.1:5000">
+        <button id="btnHealth" class="download-btn">Check</button>
+        <div id="healthMsg" style="margin-left:10px;color:var(--muted)"></div>
+      </div>
+    </div>
+
+    <div class="grid" style="margin-top:14px">
+      <!-- LEFT: uploader + preview -->
+      <div class="card">
+        <div class="uploader">
+          <label class="muted">Upload an image (.jpg / .png)</label>
+          <div class="row">
+            <label class="btn" id="uploadBtn">Choose image</label>
+            <input type="file" id="fileInput" accept="image/*">
+            <button id="sendBtn" class="btn" style="background:linear-gradient(90deg,#60a5fa,#a78bfa)">Send to backend</button>
+          </div>
+
+          <div style="margin-top:10px">
+            <div class="preview" id="preview">No image selected</div>
+          </div>
+
+          <div style="margin-top:10px" class="row">
+            <div class="stat">
+              <h3 id="predLabel">—</h3>
+              <p class="small muted">Predicted label</p>
+            </div>
+            <div class="stat">
+              <h3 id="predSynset">—</h3>
+              <p class="small muted">Synset</p>
+            </div>
+          </div>
+
+          <div style="margin-top:10px" class="row">
+            <div class="stat">
+              <h3 id="baseConf">—</h3>
+              <p class="small muted">Base calibrated confidence</p>
+            </div>
+            <div class="stat">
+              <h3 id="metaProb">—</h3>
+              <p class="small muted">REASON meta probability</p>
+            </div>
+          </div>
+
+          <div style="margin-top:12px">
+            <button id="downloadMeta" class="download-btn" disabled>Download meta vector CSV</button>
+            <button id="clearBtn" class="download-btn">Clear</button>
+            <div id="status" class="small" style="margin-top:8px;color:var(--muted)"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: plots and details -->
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <h3 style="margin:0">Results & Diagnostics</h3>
+            <p class="small muted" style="margin:6px 0 12px 0">Class probabilities, meta vector and raw outputs.</p>
+          </div>
+          <div>
+            <button id="showRaw" class="download-btn">Show raw JSON</button>
+          </div>
+        </div>
+
+        <div class="results">
+          <div class="plot" id="plotClass">Class probabilities (top-8)</div>
+          <div class="plot" id="plotMeta">Meta vector (first dims)</div>
+        </div>
+
+        <div style="margin-top:12px">
+          <div class="pre" id="rawOut">No results yet</div>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      REASON demo • Models served from backend. Make sure to copy ./reason_saved into the backend folder. (No data leaves your machine)
+    </footer>
+  </div>
+
+<script>
+  // Simple frontend JS - no frameworks
+  const fileInput = document.getElementById('fileInput');
+  const uploadBtn = document.getElementById('uploadBtn');
+  const sendBtn = document.getElementById('sendBtn');
+  const preview = document.getElementById('preview');
+  const predLabel = document.getElementById('predLabel');
+  const predSynset = document.getElementById('predSynset');
+  const baseConf = document.getElementById('baseConf');
+  const metaProb = document.getElementById('metaProb');
+  const plotClass = document.getElementById('plotClass');
+  const plotMeta = document.getElementById('plotMeta');
+  const rawOut = document.getElementById('rawOut');
+  const status = document.getElementById('status');
+  const backendUrlEl = document.getElementById('backendUrl');
+  const btnHealth = document.getElementById('btnHealth');
+  const healthMsg = document.getElementById('healthMsg');
+  const downloadMeta = document.getElementById('downloadMeta');
+  const showRaw = document.getElementById('showRaw');
+  const clearBtn = document.getElementById('clearBtn');
+
+  let currentResp = null;
+  let currentFile = null;
+
+  uploadBtn.onclick = () => fileInput.click();
+  fileInput.onchange = (e) => {
+    const f = e.target.files[0];
+    if (!f) return;
+    currentFile = f;
+    const url = URL.createObjectURL(f);
+    preview.innerHTML = `<img src="${url}" alt="preview">`;
+    status.textContent = `Selected: ${f.name} (${(f.size/1024).toFixed(1)} KB)`;
+  };
+
+  clearBtn.onclick = () => {
+    fileInput.value = "";
+    currentFile = null;
+    preview.innerHTML = "No image selected";
+    predLabel.textContent = "—"; predSynset.textContent = "—";
+    baseConf.textContent = "—"; metaProb.textContent = "—";
+    plotClass.innerHTML = ""; plotMeta.innerHTML = ""; rawOut.textContent = "No results yet";
+    downloadMeta.disabled = true;
+    status.textContent = "";
+    currentResp = null;
+  };
+
+  btnHealth.onclick = async () => {
+    healthMsg.textContent = "Checking...";
+    try {
+      const res = await fetch(backendUrlEl.value + "/health");
+      const j = await res.json();
+      healthMsg.textContent = `ok (${j.device})`;
+    } catch (e) {
+      healthMsg.textContent = "unreachable";
+    }
+  };
+
+  sendBtn.onclick = async () => {
+    if (!currentFile) { status.textContent = "Choose an image first"; return; }
+    status.textContent = "Uploading...";
+    const url = backendUrlEl.value + "/api/infer";
+    const form = new FormData();
+    form.append("file", currentFile);
+    try {
+      const res = await fetch(url, { method: "POST", body: form });
+      if (!res.ok) {
+        const t = await res.text();
+        status.textContent = `Backend error: ${res.status} ${t}`;
+        return;
+      }
+      const j = await res.json();
+      currentResp = j;
+      renderResult(j);
+      status.textContent = "Done";
+      downloadMeta.disabled = !j.meta_vector;
+    } catch (err) {
+      status.textContent = "Request failed: " + err.message;
+    }
+  };
+
+  function renderResult(j) {
+    // textual
+    predLabel.textContent = j.pred_label || "—";
+    predSynset.textContent = j.pred_synset || ("idx:"+j.pred_idx);
+    baseConf.textContent = j.base_conf_calibrated ? (Number(j.base_conf_calibrated).toFixed(3)) : "—";
+    metaProb.textContent = j.meta_prob ? (Number(j.meta_prob).toFixed(3)) : "—";
+
+    // classbar image
+    if (j.classbar_png) {
+      plotClass.innerHTML = `<img src="${j.classbar_png}" style="max-width:100%;">`;
+    } else {
+      plotClass.innerHTML = "<div class='small muted'>No class bar returned</div>";
+    }
+    // meta png
+    if (j.meta_png) {
+      plotMeta.innerHTML = `<img src="${j.meta_png}" style="max-width:100%;">`;
+    } else {
+      plotMeta.innerHTML = "<div class='small muted'>No meta image returned</div>";
+    }
+
+    // raw JSON
+    rawOut.textContent = JSON.stringify(j, null, 2);
+  }
+
+  downloadMeta.onclick = () => {
+    if (!currentResp || !currentResp.meta_vector) return;
+    const vec = currentResp.meta_vector;
+    const csv = vec.join(",") + "\n";
+    const b = new Blob([csv], {type: "text/csv"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(b);
+    a.download = "meta_vector.csv";
+    a.click();
+  };
+
+  showRaw.onclick = () => {
+    if (rawOut.style.display === 'none') { rawOut.style.display = 'block'; showRaw.textContent = "Hide raw JSON"; }
+    else { rawOut.style.display = 'none'; showRaw.textContent = "Show raw JSON"; }
+  };
+
+  // display initial empty
+  rawOut.style.display = 'block';
+</script>
+</body>
+</html>

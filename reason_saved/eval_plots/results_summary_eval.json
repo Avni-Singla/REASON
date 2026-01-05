@@ -1,0 +1,22 @@
+{
+  "base": {
+    "accuracy": 0.8196178343949044,
+    "precision_macro": 0.8413637871378249,
+    "recall_macro": 0.8198454289620392,
+    "f1_macro": 0.8073601985552502
+  },
+  "base_macro_auc": 0.9870649939638693,
+  "meta": {
+    "ap": null,
+    "auc": null
+  },
+  "plots": {
+    "confusion_base": "/content/reason_saved/eval_plots/confusion_base.png",
+    "history_base": "/content/reason_saved/eval_plots/history_base.png",
+    "history_meta": "/content/reason_saved/eval_plots/history_meta_enhanced.png",
+    "roc_base_sample": "/content/reason_saved/eval_plots/roc_base_sample.png",
+    "meta_roc_pr": null,
+    "accept_vs_acc": null,
+    "before_after_bar": null
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "meta_npz": "/content/reason_saved/meta_dataset_enriched.npz",
+  "N_samples": 3925,
+  "meta_dim": 267,
+  "penultimate_dim": 2048
+}
